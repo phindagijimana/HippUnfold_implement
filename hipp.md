@@ -51,7 +51,7 @@ In this folder, **`./hip`** wraps the local **Apptainer/Singularity** image and 
 | **`./hip start`** | **`sbatch slurm_hippunfold.example.slurm`** with **`HIPPUNFOLD_SIF`** set; writes the job id to **`.hip/last_job_id`**. |
 | **`./hip logs [-f] [JOBID]`** | Tail **`hippunfold_<JOBID>.err`** / **`.out`** in this directory; default **JOBID** = last `./hip start`. **`-f`** follows the log. |
 | **`./hip stop [JOBID]`** | **`scancel`** (default **JOBID** = last `./hip start`). |
-| **`./hip checks`** | Verifies **apptainer**, **sbatch**, **.sif** file, **sample_data** BIDS metadata. |
+| **`./hip checks`** | Verifies **apptainer**, **sbatch**, and **.sif**; optional note if local BIDS is present. |
 | **`./hip status`** | **checks** plus a quick list of recent **`hippunfold_*.err`** files. |
 
 **Environment:** `HIPPUNFOLD_SIF` (explicit image path), `HIPPUNFOLD_IMAGE_TAG` (default tag name for install / resolution).
@@ -64,8 +64,3 @@ In this folder, **`./hip`** wraps the local **Apptainer/Singularity** image and 
 
 - **HippUnfold ≥ 1.3.0** (unfolded-space registration / multihist atlas): DeKraker, J., Palomero-Gallagher, N., Kedo, O., Ladbon-Bernasconi, N., Muenzing, S. E. A., Axer, M., Amunts, K., Khan, A. R., Bernhardt, B., & Evans, A. C. (2023). Evaluation of surface-based hippocampal registration using ground-truth subfield definitions. *eLife*, **12**, RP88404. [https://doi.org/10.7554/eLife.88404.3](https://doi.org/10.7554/eLife.88404.3)
 
----
-
-## Local copy of the paper
-
-A PDF is stored in this folder as **`HippUnfold.pdf`** (main methods paper; verify against the DOI above if you need the exact version).

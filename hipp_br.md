@@ -6,7 +6,7 @@ Concise **Builder Review**–style notes (usability, reproducibility, performanc
 
 **Related (≥1.3.0, unfolded atlas):** DeKraker J, et al. *eLife* 2023;12:RP88404. https://doi.org/10.7554/eLife.88404.3
 
-**Local stack:** `pull_sif.sh`, `run_hippunfold.sh`, `slurm_hippunfold.example.slurm`, `./hip`, `sample_data/`, `khanlab_hippunfold_*.sif`, `HIPPUNFOLD_CACHE_DIR`.
+**Local stack:** `pull_sif.sh`, `run_hippunfold.sh`, `slurm_hippunfold.example.slurm`, `./hip`, local BIDS (see `sample_data/README.md`), `khanlab_hippunfold_*.sif`, `HIPPUNFOLD_CACHE_DIR`.
 
 ---
 
@@ -24,7 +24,7 @@ Concise **Builder Review**–style notes (usability, reproducibility, performanc
 | **Friction** | v1.3+ downloads models/atlas; version/atlas flags affect outputs | Same + **cache quota**, **network** on first run; long batch run (not interactive) |
 | **Repro** | Code + containers on Docker Hub; BIDS aids provenance | **Pin image tag + HippUnfold version + CLI**; 1.3.x defaults differ—document **`--atlas` / `--no_unfolded_reg`** |
 
-**External builder:** Paper metrics are validation on their data; **your** scanners need local QA. We validate **runnable** `.sif` + sample **`sub-1`** path, not the paper’s full benchmark suite. Logs: **`hippunfold_<JOBID>.err`**.
+**External builder:** Paper metrics are validation on their data; **your** scanners need local QA. This repo validates **runnable** `.sif` + SLURM wiring, not the paper’s full benchmark suite. Logs: **`hippunfold_<JOBID>.err`**.
 
 ---
 

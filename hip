@@ -135,10 +135,9 @@ cmd_checks() {
   fi
 
   if [[ -f "$ROOT/sample_data/dataset_description.json" ]]; then
-    echo "  [ok] sample_data BIDS layout present"
+    echo "  [ok] local BIDS under sample_data/ (not tracked by git)"
   else
-    echo "  [warn] sample_data/dataset_description.json missing"
-    ok=1
+    echo "  [info] no local BIDS in sample_data/ yet — see sample_data/README.md"
   fi
 
   if [[ -f "$LAST_JOB_FILE" ]]; then
