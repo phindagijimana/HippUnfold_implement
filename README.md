@@ -16,7 +16,7 @@ This repository provides scripts and job templates. It does **not** fork HippUnf
 | [`run_sample_sub1.sh`](run_sample_sub1.sh) | Example local invocation when BIDS data live under `sample_data/` (populated by you). |
 | [`hip`](hip) | Small CLI: `install`, `start`, `logs`, `stop`, `checks`, `status`. |
 
-Further reading in-repo: **[`hipp.md`](hipp.md)** (concepts and upstream links), **[`hipp_br.md`](hipp_br.md)** (concise methods/deployment notes).
+Further reading in-repo: **[`hipp.md`](hipp.md)** (concepts and upstream links), **[`hipp_br.md`](hipp_br.md)** (concise review of the HippUnfold *eLife* paper).
 
 ---
 
