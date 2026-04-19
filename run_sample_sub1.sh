@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Run HippUnfold on bundled sample BIDS data for **sub-1** only (T1w).
-# sample_data/ also contains sub-2; use --participant_label 2 to select that subject.
+# Run HippUnfold on local BIDS under sample_data/ for **sub-1** only (T1w).
+# Populate sample_data/ from your own BIDS or the official test set — see sample_data/README.md.
 #
 # Prerequisites: pull a container once, e.g. ./pull_sif.sh 1.5.2
 #   export HIPPUNFOLD_SIF="$PWD/khanlab_hippunfold_1_5_2.sif"

@@ -9,6 +9,11 @@ hippunfold_*.out
 # Local state from ./hip
 .hip/
 
+# Local BIDS data and papers (do not push imaging or site metadata)
+sample_data/sub-*
+sample_data/dataset_description.json
+*.pdf
+
 # OS / editor
 .DS_Store
 *~
