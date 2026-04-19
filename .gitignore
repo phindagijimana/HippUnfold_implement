@@ -1,0 +1,14 @@
+# Container images (pull locally: ./pull_sif.sh or ./hip install)
+*.sif
+
+# Pipeline outputs and SLURM logs
+outputs*/
+hippunfold_*.err
+hippunfold_*.out
+
+# Local state from ./hip
+.hip/
+
+# OS / editor
+.DS_Store
+*~
