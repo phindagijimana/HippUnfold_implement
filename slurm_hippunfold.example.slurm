@@ -35,6 +35,7 @@ export SINGULARITY_BINDPATH="${BIDS_DIR}:${BIDS_DIR},${OUT_DIR}:${OUT_DIR},${HIP
 export APPTAINER_BINDPATH="$SINGULARITY_BINDPATH"
 # Avoid host ~/.local Python leaking into the image (see run_hippunfold.sh / nnUNet crash)
 export PYTHONNOUSERSITE=1
+unset PYTHONPATH 2>/dev/null || true
 export HIPPUNFOLD_SIF="$SIF"
 
 mkdir -p "$OUT_DIR" "$HIPPUNFOLD_CACHE_DIR"

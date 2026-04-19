@@ -12,6 +12,13 @@
 #   ./run_sample_sub1.sh -p --cores 8
 set -euo pipefail
 
+# Match slurm_hippunfold.example.slurm: safe TMPDIR (noexec /tmp) + Python isolation.
+export TMPDIR="${TMPDIR:-$HOME/apptainer_tmp}"
+mkdir -p "$TMPDIR"
+export APPTAINER_TMPDIR="${APPTAINER_TMPDIR:-$TMPDIR}"
+export PYTHONNOUSERSITE=1
+unset PYTHONPATH 2>/dev/null || true
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BIDS_DIR="$SCRIPT_DIR/sample_data"
 OUT_DIR="$SCRIPT_DIR/outputs_sample_sub1"
@@ -24,6 +31,7 @@ fi
 
 export HIPPUNFOLD_CACHE_DIR="${HIPPUNFOLD_CACHE_DIR:-$HOME/hippunfold_cache}"
 export SINGULARITY_BINDPATH="${BIDS_DIR}:${BIDS_DIR},${OUT_DIR}:${OUT_DIR},${HIPPUNFOLD_CACHE_DIR}:${HIPPUNFOLD_CACHE_DIR}"
+export APPTAINER_BINDPATH="$SINGULARITY_BINDPATH"
 mkdir -p "$OUT_DIR" "$HIPPUNFOLD_CACHE_DIR"
 
 exec "$SCRIPT_DIR/run_hippunfold.sh" \
