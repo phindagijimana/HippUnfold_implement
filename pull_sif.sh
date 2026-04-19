@@ -10,6 +10,8 @@ if [[ -z "${TMPDIR:-}" ]]; then
 fi
 export APPTAINER_TMPDIR="${APPTAINER_TMPDIR:-$TMPDIR}"
 export APPTAINER_CACHEDIR="${APPTAINER_CACHEDIR:-$HOME/.cache/apptainer}"
+# Keep Singularity-compatible name in sync (Apptainer warns if they differ).
+export SINGULARITY_CACHEDIR="${SINGULARITY_CACHEDIR:-$APPTAINER_CACHEDIR}"
 
 TAG="${1:-latest}"
 OUT_DIR="${OUT_DIR:-.}"
