@@ -32,6 +32,9 @@ SIF="${HIPPUNFOLD_SIF:-$SCRIPT_DIR/khanlab_hippunfold_latest.sif}"
 export HIPPUNFOLD_CACHE_DIR="${SCRATCH:-$HOME}/hippunfold_cache"
 # If data are under /project or /scratch, ensure the container can see them:
 export SINGULARITY_BINDPATH="${BIDS_DIR}:${BIDS_DIR},${OUT_DIR}:${OUT_DIR},${HIPPUNFOLD_CACHE_DIR}:${HIPPUNFOLD_CACHE_DIR}"
+export APPTAINER_BINDPATH="$SINGULARITY_BINDPATH"
+# Avoid host ~/.local Python leaking into the image (see run_hippunfold.sh / nnUNet crash)
+export PYTHONNOUSERSITE=1
 export HIPPUNFOLD_SIF="$SIF"
 
 mkdir -p "$OUT_DIR" "$HIPPUNFOLD_CACHE_DIR"

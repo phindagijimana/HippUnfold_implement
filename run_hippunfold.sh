@@ -42,6 +42,11 @@ RUN_FLAGS=(-e)
 if [[ -n "${HIPPUNFOLD_CACHE_DIR:-}" ]]; then
   RUN_FLAGS+=(--env "HIPPUNFOLD_CACHE_DIR=$HIPPUNFOLD_CACHE_DIR")
 fi
+# Home is usually bind-mounted; Python then loads ~/.local/site-packages and can shadow
+# the image's numpy/skimage → "numpy.dtype size changed" / nnUNet_predict crash.
+RUN_FLAGS+=(--env "PYTHONNOUSERSITE=1")
+# Drop host PYTHONPATH if the scheduler/modules set it (still use image site-packages only).
+RUN_FLAGS+=(--env "PYTHONPATH=")
 
 # -e/--cleanenv: minimal env inside container (matches upstream docs)
 exec "$RUNTIME" run "${RUN_FLAGS[@]}" "$SIF" "$@"
