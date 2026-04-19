@@ -1,62 +1,67 @@
-# Builder Review — HippUnfold (DeKraker et al. 2022) + local HPC
+# Paper review — HippUnfold (DeKraker et al., *eLife* 2022)
 
-Concise **Builder Review**–style notes (usability, reproducibility, performance, clinical fit, limitations, ops).
+Concise **Builder Review**–style evaluation of the primary methods paper—not an audit of this repository’s shell scripts.
 
-**Primary:** DeKraker J, et al. *Automated hippocampal unfolding for morphometry and subfield segmentation with HippUnfold.* *eLife* 2022;11:e77945. https://doi.org/10.7554/eLife.77945
+**DeKraker J, Haast RA, Yousif MD, Karat B, Lau JC, Köhler S, Khan AR.** *Automated hippocampal unfolding for morphometry and subfield segmentation with HippUnfold.* *eLife* 2022;11:e77945. https://doi.org/10.7554/eLife.77945
 
-**Related (≥1.3.0, unfolded atlas):** DeKraker J, et al. *eLife* 2023;12:RP88404. https://doi.org/10.7554/eLife.88404.3
-
-**Local stack:** `pull_sif.sh`, `run_hippunfold.sh`, `slurm_hippunfold.example.slurm`, `./hip`, local BIDS (see `sample_data/README.md`), `khanlab_hippunfold_*.sif`, `HIPPUNFOLD_CACHE_DIR`.
+**Also relevant for software ≥1.3.0 (unfolded-space atlas registration):** DeKraker J, et al. *eLife* 2023;12:RP88404. https://doi.org/10.7554/eLife.88404.3
 
 ---
 
-## Context
+## What the paper contributes
 
-**HippUnfold** is a **BIDS App** (Snakemake): CNN segmentation (nnU-Net–class), **hippocampal unfolding** (AutoTop-style intrinsic coordinates), surfaces + subfields for morphometry. **This repo** only adds **HPC plumbing**—Apptainer pull (`TMPDIR` for `noexec` `/tmp`), SLURM (`SLURM_SUBMIT_DIR`), **`./hip`**—not new algorithms.
-
----
-
-## Usability and reproducibility
-
-| | Paper / upstream | This deployment |
-|--|-------------------|-----------------|
-| **Surface** | BIDS T1w/T2w; Docker/Singularity; GPU optional | **`./hip install` → `./hip start`**; **`./hip checks`**; SLURM `cd` to submit dir |
-| **Friction** | v1.3+ downloads models/atlas; version/atlas flags affect outputs | Same + **cache quota**, **network** on first run; long batch run (not interactive) |
-| **Repro** | Code + containers on Docker Hub; BIDS aids provenance | **Pin image tag + HippUnfold version + CLI**; 1.3.x defaults differ—document **`--atlas` / `--no_unfolded_reg`** |
-
-**External builder:** Paper metrics are validation on their data; **your** scanners need local QA. This repo validates **runnable** `.sif` + SLURM wiring, not the paper’s full benchmark suite. Logs: **`hippunfold_<JOBID>.err`**.
+The work introduces **HippUnfold**, a **Snakemake-based BIDS App** that (i) segments hippocampal tissue and subfields with **deep learning** (nnU-Net–class models), (ii) **unfolds** the hippocampus into an **intrinsic coordinate system** suited to laminar and longitudinal position along the structure, and (iii) delivers **surfaces, unfolded maps, and subfield labels** for **morphometry** and group studies. The narrative ties **computational unfolding** to clearer **intersubject alignment** and richer **surface-based** statistics than voxel-only ROI approaches.
 
 ---
 
-## Performance and generalization
+## Methods and reproducibility (as presented)
 
-- **Speed:** Dominated by **cores**, **I/O** (NFS vs scratch), **model download** first run—use **`./hip logs`** / **`sacct`** to tune; no bundled benchmark here.
-- **Scope:** Best on **standard structural MRI**; exotic modalities/non-human paths need **docs flags** and often **manual masks**. **Research tool**, not a certified clinical device.
-- **vs ASHS / FreeSurfer hipp:** HippUnfold’s edge is **unfolding + surface/unfold metrics**; use simpler ROI tools if you only need volumes and want lighter compute.
-
----
-
-## Clinical / interpretability / integration
-
-- **Research:** Strong when hypotheses need **subfields/surfaces in unfolded space**. **Not** diagnostic radiology; outputs need **QC** (motion, contrast, small FOV T2w → consider **`--t1_reg_template`**).
-- **Outputs:** BIDS derivatives, GIfTI/CIFTI-friendly; fits **R/Python** downstream. **Stock container** does not expose Snakemake **cluster profiles**; **`./hip`** does not add PACS/XNAT.
+- **Inputs:** Standard **BIDS** anatomical MRI (**T1w** / **T2w**); the pipeline is positioned for research cohorts with conventional resolutions, with emphasis on benefit from **higher resolution** where available.
+- **Segmentation:** Data-driven **CNN** segmentation replaces manual labels for typical contrasts; the paper discusses validation **against manual labels** and **comparison to other pipelines** (e.g. FreeSurfer/ASHS-style workflows) under stated acquisition assumptions.
+- **Software story:** Open implementation and **containerized** distribution support **reproducibility**; exact numbers on **new** data remain **protocol-dependent**.
 
 ---
 
-## Limitations
+## Strengths
 
-Long DAG and large intermediates—prefer **scratch** for cache/output where allowed. **No arm64** Docker (Apple Silicon impractical per upstream). **`run -e`** needs explicit **`HIPPUNFOLD_CACHE_DIR`** in the wrapper (done in `run_hippunfold.sh`). **Hippocampus-only.**
+- Clear **problem framing**: hippocampal subfields are easier to interpret in a **topology-aware unfolded space** than in raw slice or whole-hippocampus volume summaries alone.
+- **End-to-end tool**: from BIDS to **surfaces, metrics, and subfields** with documented CLI and ecosystem (toolboxes, docs).
+- **Empirical validation** against manual references and alternatives, with honest discussion of **resolution** and **failure modes** (motion, contrast, limited FOV for some contrasts).
 
 ---
 
-## Builder insight
+## Limitations and generalization
 
-Choose HippUnfold when the **science needs unfolded coordinates and surface metrics**. On shared HPC, success is mostly **ops**: **pinned tags**, **cache + TMPDIR**, **SLURM paths**, **documented atlas/version flags**. Extensions: site **partition/account** in the SLURM script, **CI** `hippunfold --help` + **`./hip checks`**, scratch-first env vars.
+- Performance metrics are **cohort-specific**; new scanners, sequences, and patient groups require **local QA**—the paper does not promise universal numeric performance.
+- **Non-standard modalities** or species may need **manual masks** or **template modes** outside the default T1w/T2w human pipeline described for the main validation.
+- **Research software**, not a regulated clinical product; segmentations and registrations remain **algorithm-dependent** and require **expert review** where clinical decisions are involved.
+
+---
+
+## Positioning vs other tools
+
+The paper situates HippUnfold among **hippocampal subfield** methods: compared with tools that chiefly output **volumetric ROIs**, HippUnfold’s emphasis is **unfolding** and **surface/unfold metrics**. Teams that only need **simple volume** or **fast turnaround** may prefer lighter pipelines; teams studying **intrinsic coordinates, laminar-style measures, or unfolded registration** get a stronger match—at the cost of **compute** and **workflow complexity**.
+
+---
+
+## Synthesis
+
+The manuscript makes a **credible case** that automated unfolding plus deep segmentation **lowers the barrier** to consistent, surface-oriented hippocampal analysis in **typical multicenter T1w/T2w** settings, while **transparently** acknowledging **QC**, **protocol effects**, and **limits of automation**. Cite the **2022 *eLife*** paper for the core method; cite the **2023 *eLife*** follow-on if you rely on **unfolded-space atlas registration** in **current** default workflows.
+
+---
+
+## Relation to this repository
+
+The **`HippUnfold_implement`** repo only holds **HPC wrappers** (image pull, SLURM, environment isolation). It **does not** replicate or extend the paper’s experiments; successful local runs **do not** substitute for reading the paper and upstream docs for **scientific** interpretation.
 
 ---
 
 ## References
 
-- Papers (DOIs above), [docs](https://hippunfold.readthedocs.io/), [GitHub](https://github.com/khanlab/hippunfold), [`hipp.md`](hipp.md).
+- DeKraker et al. 2022 — primary HippUnfold methods (*eLife* e77945).  
+- DeKraker et al. 2023 — unfolded registration / multihist atlas (*eLife* RP88404).  
+- [hippunfold.readthedocs.io](https://hippunfold.readthedocs.io/) — user manual.  
+- [github.com/khanlab/hippunfold](https://github.com/khanlab/hippunfold) — source.  
+- [`hipp.md`](hipp.md) — short concepts summary in this project.
 
 *Updated: 2026-04-19.*
