@@ -8,7 +8,7 @@ STATE_DIR="$ROOT/.hip"
 LAST_JOB_FILE="$STATE_DIR/last_job_id"
 DEFAULT_TAG="${HIPPUNFOLD_IMAGE_TAG:-latest}"
 DEFAULT_SIF="$ROOT/khanlab_hippunfold_${DEFAULT_TAG//./_}.sif"
-SLURM_SCRIPT="$ROOT/slurm_hippunfold.example.slurm"
+SLURM_SCRIPT="$ROOT/slurm_hippunfold_multi.slurm"
 
 mkdir -p "$STATE_DIR"
 
@@ -19,15 +19,27 @@ usage() {
 HippUnfold helper (Singularity/Apptainer + SLURM).
 
   ./hip install [TAG]     Pull container (default TAG=$DEFAULT_TAG). Sets TMPDIR/APPTAINER_* for noexec /tmp.
-  ./hip start             Submit $SLURM_SCRIPT; saves job id to $LAST_JOB_FILE
+  ./hip start [opts]      Submit a SLURM job; saves job id to $LAST_JOB_FILE  (alias: slurm)
   ./hip logs [-f] [JOB]   Show stderr log (default: last job). Use -f to follow.
   ./hip stop [JOB]        scancel JOB (default: last job from ./hip start)
-  ./hip checks            Verify tools, image, sample BIDS, optional running jobs
+  ./hip checks            Verify tools, image, sample BIDS, optional running jobs  (alias: check)
   ./hip status            Short summary (last job + squeue)
+
+start options:
+  -i, --bids DIR          BIDS input dir (default: \$ROOT/sample_data)
+  -o, --out DIR           Output derivatives dir (default: \$ROOT/outputs_<timestamp>)
+  -p, --participant L...  Participant label(s); space/comma separated or repeatable.
+                          'sub-' prefix optional. Omit to process all subjects.
+  -m, --modality MOD      T1w|T2w|hippb500|segT1w|segT2w|cropseg (default: T1w)
+
+start examples:
+  ./hip start                                   # sample_data, all subjects, T1w
+  ./hip start -p 1                              # sample_data, sub-1
+  ./hip start -i /data/bids -o /data/deriv -p 001 006 007 -m T1w
 
 Environment:
   HIPPUNFOLD_IMAGE_TAG   Tag for install and checks (default: latest)
-  HIPPUNFOLD_SIF         Override .sif path for checks
+  HIPPUNFOLD_SIF         Override .sif path for checks / start
 
 EOF
 }
@@ -66,13 +78,51 @@ resolve_sif() {
 cmd_start() {
   [[ -f "$SLURM_SCRIPT" ]] || die "missing $SLURM_SCRIPT"
   command -v sbatch >/dev/null 2>&1 || die "sbatch not found"
+
+  local bids="$ROOT/sample_data"
+  local out_dir=""
+  local modality="T1w"
+  local -a labels=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -i|--bids) bids="${2:?--bids needs a path}"; shift 2 ;;
+      -o|--out) out_dir="${2:?--out needs a path}"; shift 2 ;;
+      -m|--modality) modality="${2:?--modality needs a value}"; shift 2 ;;
+      -p|--participant|--participant-label|--participant_label)
+        shift
+        while [[ $# -gt 0 && "$1" != -* ]]; do
+          local parts
+          IFS=', ' read -r -a parts <<< "$1"
+          local p
+          for p in "${parts[@]}"; do [[ -n "$p" ]] && labels+=("${p#sub-}"); done
+          shift
+        done
+        ;;
+      *) die "unknown start option: $1 (see ./hip help)" ;;
+    esac
+  done
+
+  [[ -d "$bids" ]] || die "BIDS dir not found: $bids"
+  bids="$(cd "$bids" && pwd)"
+  if [[ -z "$out_dir" ]]; then
+    out_dir="$ROOT/outputs_$(date +%Y%m%d_%H%M%S)"
+  fi
+  mkdir -p "$out_dir"
+  out_dir="$(cd "$out_dir" && pwd)"
+
   local sif
   sif="$(resolve_sif)" || die "no .sif found — run: ./hip install [TAG] or export HIPPUNFOLD_SIF=/path/to.sif"
-  local out
-  out="$(cd "$ROOT" && export HIPPUNFOLD_SIF="$sif" && sbatch "$SLURM_SCRIPT")"
-  echo "$out"
+
+  local labels_str="${labels[*]:-}"
+  local exp="ALL,BIDS_DIR=$bids,OUT_DIR=$out_dir,MODALITY=$modality,HIPPUNFOLD_SIF=$sif"
+  [[ -n "$labels_str" ]] && exp="$exp,PARTICIPANTS=$labels_str"
+
+  echo "hip: start bids=$bids out=$out_dir modality=$modality subjects=[${labels_str:-ALL}]"
+  local sub_out
+  sub_out="$(cd "$ROOT" && sbatch --export="$exp" "$SLURM_SCRIPT")"
+  echo "$sub_out"
   local id
-  id="$(echo "$out" | awk '{print $NF}')"
+  id="$(echo "$sub_out" | awk '{print $NF}')"
   [[ -n "$id" ]] || die "could not parse job id from sbatch output"
   echo "$id" >"$LAST_JOB_FILE"
   echo "hip: saved job id $id -> $LAST_JOB_FILE"
@@ -161,10 +211,10 @@ main() {
   shift || true
   case "$sub" in
     install) cmd_install "$@" ;;
-    start) cmd_start "$@" ;;
+    start|slurm) cmd_start "$@" ;;
     logs) cmd_logs "$@" ;;
     stop) cmd_stop "$@" ;;
-    checks) cmd_checks ;;
+    checks|check) cmd_checks ;;
     status) cmd_status ;;
     help|-h|--help|'') usage ;;
     *) die "unknown command: $sub — try ./hip help" ;;

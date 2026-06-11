@@ -12,7 +12,8 @@ This repository provides scripts and job templates. It does **not** fork HippUnf
 |-----------|------|
 | [`pull_sif.sh`](pull_sif.sh) | Build a `.sif` from `docker://khanlab/hippunfold:<tag>` with HPC-safe temp/cache paths. |
 | [`run_hippunfold.sh`](run_hippunfold.sh) | Invoke the container with a clean environment and cache dir forwarding. |
-| [`slurm_hippunfold.example.slurm`](slurm_hippunfold.example.slurm) | Example batch job: BIDS input, output directory, `participant` level, resource requests. |
+| [`slurm_hippunfold_multi.slurm`](slurm_hippunfold_multi.slurm) | Parameterized batch job (used by `./hip start`): one snakemake run over one/many/all subjects. |
+| [`slurm_hippunfold.example.slurm`](slurm_hippunfold.example.slurm) | Minimal hand-editable example for a single subject. |
 | [`run_sample_sub1.sh`](run_sample_sub1.sh) | Example local invocation when BIDS data live under `sample_data/` (populated by you). |
 | [`hip`](hip) | Small CLI: `install`, `start`, `logs`, `stop`, `checks`, `status`. |
 
@@ -37,13 +38,24 @@ Further reading in-repo: **[`hipp.md`](hipp.md)** (concepts and upstream links),
    or `./hip install`  
    This produces `khanlab_hippunfold_latest.sif` in the repo directory (not committed).
 3. **Prepare BIDS data** locally—see [`sample_data/README.md`](sample_data/README.md). Do not commit patient or site-identifiable imaging to a public remote.
-4. **Edit** [`slurm_hippunfold.example.slurm`](slurm_hippunfold.example.slurm) for your site: partition, account, wall time, memory, and optionally `BIDS_DIR` / cache paths.
-5. **Submit**:  
-   `export HIPPUNFOLD_SIF="$PWD/khanlab_hippunfold_latest.sif"`  
-   `sbatch slurm_hippunfold.example.slurm`  
-   or `./hip start` (saves the job id under `.hip/`).
+4. **Submit** via the CLI (saves the job id under `.hip/`):  
 
-Monitor with `./hip logs` or `tail -f hippunfold_<jobid>.err`.
+```bash
+# sample_data, sub-1, T1w
+./hip start -p 1
+
+# your own BIDS, selected subjects, explicit output dir
+./hip start -i /data/bids -o /data/derivatives/hippunfold -p 001 006 007 -m T1w
+
+# every subject in a BIDS dir
+./hip start -i /data/bids -o /data/derivatives/hippunfold
+```
+
+   `./hip start` parameterizes [`slurm_hippunfold_multi.slurm`](slurm_hippunfold_multi.slurm); all selected subjects run in one snakemake invocation (parallelized across cores) writing to one `OUT_DIR`. Edit the `#SBATCH` header in that script for your site (partition, account, wall time, memory). For a hand-built single submission you can still `sbatch slurm_hippunfold.example.slurm` after `export HIPPUNFOLD_SIF=...`.
+
+Monitor with `./hip logs` (or `-f` to follow), `./hip status`, or `tail -f hippunfold_<jobid>.err`.
+
+> Run only **one** job per `OUT_DIR` at a time: HippUnfold keeps a single `work/`/`.snakemake` tree there, so concurrent jobs on the same output dir collide. Use separate output dirs for parallel jobs.
 
 ---
 
