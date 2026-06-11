@@ -81,7 +81,33 @@ The wrapper sets `PYTHONNOUSERSITE` and bind paths so host `~/.local` Python pac
 
 ## Citation
 
-If you use HippUnfold in research, cite the **eLife** methods paper and (for recent versions) the unfolded-atlas paper—see the [HippUnfold README](https://github.com/khanlab/hippunfold#publications) for DOIs.
+If you use this deployment or HippUnfold in research, cite the primary methods paper and any follow-on work that matches the version and workflow you used. Upstream maintains the full publication list in the [HippUnfold README](https://github.com/khanlab/hippunfold#publications).
+
+### HippUnfold
+
+**Core method (cite for any HippUnfold version):**
+
+> DeKraker J, Haast RA, Yousif MD, Karat B, Lau JC, Köhler S, Khan AR. Automated hippocampal unfolding for morphometry and subfield segmentation with HippUnfold. *eLife*. 2022;11:e77945.  
+> https://doi.org/10.7554/eLife.77945
+
+**Unfolded-space registration / multihist atlas (HippUnfold ≥ 1.3.0; default in current releases):**
+
+> DeKraker J, Palomero-Gallagher N, Kedo O, Ladbon-Bernasconi N, Muenzing SEA, Axer M, Amunts K, Khan AR, Bernhardt B, Evans AC. Evaluation of surface-based hippocampal registration using ground-truth subfield definitions. *eLife*. 2023;12:RP88404.  
+> https://doi.org/10.7554/eLife.88404.3
+
+### Software, standards, and resources used here
+
+| Resource | Role in this project | Reference / link |
+|----------|----------------------|------------------|
+| **HippUnfold** | BIDS App: segmentation, unfolding, subfields | [github.com/khanlab/hippunfold](https://github.com/khanlab/hippunfold) · [hippunfold.readthedocs.io](https://hippunfold.readthedocs.io/en/latest/) |
+| **nnU-Net** | Deep-learning segmentation backend inside HippUnfold | Isensee F, Jaeger PF, Kohl SAA, Petersen J, Maier-Hein KH. nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. *Nat Methods*. 2021;18(2):203–211. https://doi.org/10.1038/s41592-020-01008-z |
+| **Snakemake / Snakebids** | Workflow engine and BIDS App framework | Mölder F, Jablonski KP, Letcher B, et al. Sustainable data analysis with Snakemake. *F1000Res*. 2021;10:33. https://doi.org/10.12688/f1000research.29032.2 |
+| **BIDS** | Input dataset organization | Gorgolewski KJ, Auer T, Calhoun VD, et al. The brain imaging data structure, a format for organizing neuroimaging datasets. *Sci Data*. 2016;3:160044. https://doi.org/10.1038/sdata.2016.44 |
+| **BIDS Apps** | Containerized neuroimaging app interface used by HippUnfold | Gorgolewski KJ, Burns CD, Madison C, et al. BIDS Apps: Improving ease of use, accessibility, and reproducibility of neuroimaging data analysis methods. *PLOS Comput Biol*. 2017;13(3):e1005209. https://doi.org/10.1371/journal.pcbi.1005209 |
+| **Apptainer / Singularity** | Container runtime on HPC | Sochat V, Prybol CJ, Kurtzer GM, et al. The Singularity container ecosystem. *PLOS ONE*. 2021;16(9):e0256920. https://doi.org/10.1371/journal.pone.0256920 |
+| **Docker image** | Upstream HippUnfold container (`khanlab/hippunfold`) | https://hub.docker.com/r/khanlab/hippunfold |
+
+This repository (`HippUnfold_implement`) is a deployment wrapper only; it does not introduce new methods. Acknowledge HippUnfold and the resources above in publications that use outputs from this pipeline.
 
 ---
 
